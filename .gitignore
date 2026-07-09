@@ -1,0 +1,12 @@
+.venv/
+.pytest_cache/
+.idea/
+__pycache__/
+*.pyc
+
+*.ex4
+*.log
+*.tmp
+
+output/
+logs/

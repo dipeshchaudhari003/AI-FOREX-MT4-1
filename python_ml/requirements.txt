@@ -1,0 +1,6 @@
+pandas
+numpy
+scikit-learn
+joblib
+MetaTrader4
+MetaTrader5
