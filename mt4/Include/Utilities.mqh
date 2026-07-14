@@ -36,5 +36,12 @@ bool IsBearish()
    return iClose(Symbol(),PERIOD_M1,1)<
           iOpen(Symbol(),PERIOD_M1,1);
 }
+double SafeDivide(double numerator, double denominator)
+{
+   if(MathAbs(denominator) < 0.000001)
+      return 0.0;
+
+   return numerator / denominator;
+}
 
 #endif

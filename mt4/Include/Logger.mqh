@@ -285,7 +285,7 @@ void LogCritical(string criticalMessage, string context = "")
 //--------------------------------------------------------------------
 void LogEAStartup()
 {
-   string message = "EA Started | Version:" + EAVersion +
+   string message = "EA Started | Version: 3.0 Enterprise" +
                    " | Symbol:" + Symbol() +
                    " | Timeframe:" + IntToString(Period()) +
                    " | Account:" + IntToString(AccountNumber()) +
@@ -354,10 +354,12 @@ void LogAccountStatus()
    double balance = AccountBalance();
    double drawdown = GetCurrentDrawdownPercent();
    
+   double marginPercent = (AccountMargin() > 0) ? (AccountFreeMargin() / AccountMargin() * 100) : 0.0;
+   
    string message = "ACCOUNT | Equity:" + DoubleToString(equity, 2) +
                    " | Balance:" + DoubleToString(balance, 2) +
                    " | DD%:" + DoubleToString(drawdown, 2) +
-                   " | Margin%:" + DoubleToString(AccountFreeMargin() / AccountMargin() * 100, 2);
+                   " | Margin%:" + DoubleToString(marginPercent, 2);
    
    WriteLog(LogFileMain, LOG_TYPE_INFO, message, LOG_LEVEL_INFO);
 }

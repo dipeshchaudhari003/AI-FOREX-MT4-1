@@ -166,7 +166,7 @@ SignalOutput CombineSignalsConservative(int technicalSignal,
    output.Timestamp = TimeCurrent();
    
    // Check for conflicts first
-   if(SignalsConflict(technicalSignal, mlSignal))
+   if(SignalsConflict(technicalSignal, mlSignal.Signal))
    {
       output.Signal = SIGNAL_HOLD;
       output.Confidence = 0.0;
@@ -177,9 +177,9 @@ SignalOutput CombineSignalsConservative(int technicalSignal,
    }
    
    // Both must agree and both must exceed minimum confidence
-   if(SignalsAgree(technicalSignal, mlSignal))
+   if(SignalsAgree(technicalSignal, mlSignal.Signal))
    {
-      double agreementLevel = GetAgreementLevel(technicalSignal, mlSignal,
+      double agreementLevel = GetAgreementLevel(technicalSignal, mlSignal.Signal,
                                                 techStrength, mlStrength);
       
       if(agreementLevel >= ConservativeConfidenceThreshold)
@@ -216,7 +216,7 @@ SignalOutput CombineSignalsBalanced(int technicalSignal,
    output.Timestamp = TimeCurrent();
    
    // Hard conflict = HOLD
-   if(SignalsConflict(technicalSignal, mlSignal))
+   if(SignalsConflict(technicalSignal, mlSignal.Signal))
    {
       output.Signal = SIGNAL_HOLD;
       output.Confidence = 0.0;
@@ -227,9 +227,9 @@ SignalOutput CombineSignalsBalanced(int technicalSignal,
    }
    
    // If signals agree
-   if(SignalsAgree(technicalSignal, mlSignal))
+   if(SignalsAgree(technicalSignal, mlSignal.Signal))
    {
-      double agreementLevel = GetAgreementLevel(technicalSignal, mlSignal,
+      double agreementLevel = GetAgreementLevel(technicalSignal, mlSignal.Signal,
                                                 techStrength, mlStrength);
       
       if(agreementLevel >= BalancedConfidenceThreshold)
@@ -299,7 +299,7 @@ SignalOutput CombineSignalsAggressive(int technicalSignal,
    output.Timestamp = TimeCurrent();
    
    // Hard conflict at high confidence = HOLD
-   if(SignalsConflict(technicalSignal, mlSignal))
+   if(SignalsConflict(technicalSignal, mlSignal.Signal))
    {
       if(techStrength >= 0.75 && mlStrength >= 0.75)
       {
@@ -438,7 +438,7 @@ SignalOutput GenerateFinalSignal()
    
    // Step 5: Apply final confidence filter
    if(output.Signal != 0 && output.Confidence < MinConfidenceRequired)
-   {
+{
       output.Signal = SIGNAL_HOLD;
       output.Source = SOURCE_HOLD;
       output.Reason += " [FILTERED: Below minimum confidence]";

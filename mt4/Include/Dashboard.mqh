@@ -345,7 +345,8 @@ string BuildDashboardComment()
    
    comment += "RISK:\n";
    comment += "  Max DD: " + DoubleToString(accStats.MaxDrawdownPercent, 2) + "%\n";
-   comment += "  Margin: " + DoubleToString(AccountFreeMargin() / AccountMargin() * 100, 1) + "%\n";
+   double marginPercent = (AccountMargin() > 0) ? (AccountFreeMargin() / AccountMargin() * 100) : 0.0;
+   comment += "  Margin: " + DoubleToString(marginPercent, 1) + "%\n";
    
    return comment;
 }

@@ -11,7 +11,7 @@
 //====================================================================
 // MODULE INCLUDES (CORE LAYER)
 //====================================================================
-#include <Config.mqh>
+#include "Config.mqh"
 #include <Globals.mqh>
 #include <Utilities.mqh>
 
