@@ -125,4 +125,54 @@ bool ConfidenceOK         = false;
 
 string DebugMessage       = "";
 
+//=====================================================
+// MONEY MANAGEMENT
+//=====================================================
+
+double StartingEquity     = 0;      // Peak equity for drawdown calculation
+double DailyStartEquity   = 0;      // Equity at start of trading day
+
+//=====================================================
+// ML SYSTEM
+//=====================================================
+
+int MLSignalsProcessed    = 0;      // Count of ML signals evaluated
+int MLSignalsUsed         = 0;      // Count of ML signals actually used
+double MLConfidenceAvg    = 0;      // Average confidence of used signals
+
+//=====================================================
+// SIGNAL ENGINE
+//=====================================================
+
+int LastSignalSource      = 0;      // Last signal source (TECHNICAL/ML/CONFLUENCE)
+double LastSignalConfidence = 0;    // Confidence of last signal
+
+//=====================================================
+// LOGGER STATISTICS
+//=====================================================
+
+int TotalLoggedTrades     = 0;      // Total trades logged
+int ErrorLogCount         = 0;      // Total errors logged
+int WarningLogCount       = 0;      // Total warnings logged
+datetime LastLogTime      = 0;      // Last log timestamp
+
+//=====================================================
+// PERFORMANCE STATISTICS
+//=====================================================
+
+double HighestEquity      = 0;      // Peak equity for drawdown
+double LowestEquity       = 0;      // Lowest equity level
+double BestTrade          = 0;      // Largest profitable trade
+double WorstTrade         = 0;      // Largest loss trade
+int ConsecutiveWinsMax    = 0;      // Max consecutive wins ever
+int ConsecutiveLossesMax  = 0;      // Max consecutive losses ever
+
+//=====================================================
+// DASHBOARD DISPLAY
+//=====================================================
+
+int EntryMarkersCount     = 0;      // Count of entry markers displayed
+int ExitMarkersCount      = 0;      // Count of exit markers displayed
+datetime LastDashboardUpdate = 0;   // Timestamp of last dashboard update
+
 #endif

@@ -5,6 +5,9 @@
 #ifndef __INDICATORS_MQH__
 #define __INDICATORS_MQH__
 
+#include "Config.mqh"
+#include "Globals.mqh"
+
 void UpdateIndicators()
 {
    //=========================================================
@@ -12,6 +15,8 @@ void UpdateIndicators()
    //=========================================================
 
    CurrOpen  = iOpen(Symbol(), EntryTF, 1);
+   CurrHigh  = iHigh(Symbol(), EntryTF, 1);
+   CurrLow   = iLow(Symbol(), EntryTF, 1);
    CurrClose = iClose(Symbol(), EntryTF, 1);
 
    PrevOpen  = iOpen(Symbol(), EntryTF, 2);
@@ -81,8 +86,8 @@ void UpdateIndicators()
    BBUpper =
       iBands(Symbol(),
              EntryTF,
-             20,
-             2,
+             BollingerPeriod,
+             BollingerDeviation,
              0,
              PRICE_CLOSE,
              MODE_UPPER,
@@ -91,8 +96,8 @@ void UpdateIndicators()
    BBMiddle =
       iBands(Symbol(),
              EntryTF,
-             20,
-             2,
+             BollingerPeriod,
+             BollingerDeviation,
              0,
              PRICE_CLOSE,
              MODE_MAIN,
@@ -101,8 +106,8 @@ void UpdateIndicators()
    BBLower =
       iBands(Symbol(),
              EntryTF,
-             20,
-             2,
+             BollingerPeriod,
+             BollingerDeviation,
              0,
              PRICE_CLOSE,
              MODE_LOWER,
@@ -115,7 +120,7 @@ void UpdateIndicators()
    StochMain =
       iStochastic(Symbol(),
                   EntryTF,
-                  4,
+                  StochPeriod,
                   3,
                   3,
                   MODE_SMA,
@@ -126,7 +131,7 @@ void UpdateIndicators()
    StochSignal =
       iStochastic(Symbol(),
                   EntryTF,
-                  4,
+                  StochPeriod,
                   3,
                   3,
                   MODE_SMA,
@@ -141,7 +146,7 @@ void UpdateIndicators()
    RSI =
       iRSI(Symbol(),
            EntryTF,
-           14,
+           RSIPeriod,
            PRICE_CLOSE,
            1);
 
