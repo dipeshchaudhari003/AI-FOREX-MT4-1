@@ -132,11 +132,11 @@ while True:
         recent_range = float(last["range_5"])
 
         if recent_range >= 3.0:
-            conf_threshold = 0.56
+            conf_threshold = 0.75
         elif recent_range >= 2.0:
-            conf_threshold = 0.58
+            conf_threshold = 0.78
         else:
-            conf_threshold = 0.60
+            conf_threshold = 0.80
 
         # Use grid-optimized TP
         if recent_range < 1.5:

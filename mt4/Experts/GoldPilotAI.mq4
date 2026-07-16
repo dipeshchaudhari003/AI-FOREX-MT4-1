@@ -46,6 +46,8 @@
 #define EA_VERSION "3.0 Enterprise"
 #define EA_NAME "GoldPilotAI"
 
+#include <MLDataExporter.mqh>
+
 //====================================================================
 // INITIALIZATION
 //====================================================================
@@ -90,6 +92,8 @@ void OnTick()
 {
    // Step 1: Update all indicators every tick
    UpdateIndicators();
+   
+   ExportMarketData();
    
    // Step 2: Check filters (early exit if conditions not met)
    if(!AllowTrading())
