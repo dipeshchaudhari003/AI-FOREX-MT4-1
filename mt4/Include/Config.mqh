@@ -16,9 +16,9 @@ input int    MagicNumber           = 202501;
 // TP / SL
 //==============================
 input int DefaultTakeProfit        = 50;
-input int DefaultStopLoss          = 100;
-input int TakeProfitPoints         = 100;  // Alternative naming
-input int StopLossPoints           = 50;   // Alternative naming
+input int DefaultStopLoss          = 300;
+input int TakeProfitPoints         = 700;  // Alternative naming
+input int StopLossPoints           = 350;  // Alternative naming
 
 input int BreakEvenPoints          = 10;
 
@@ -144,7 +144,7 @@ input double MaximumLotSize     = 1.0;  // Maximum lot size
 // SL/TP Distances
 input int MinimumSLDistance     = 50;   // Minimum SL distance in points
 input int MinimumTPDistance     = 50;   // Minimum TP distance in points
-input double RiskRewardRatio    = 1.5;  // Minimum R:R ratio (0 = disabled)
+input double RiskRewardRatio    = 0.75;  // Minimum R:R ratio (0 = disabled)
 
 // SL Buffer
 input int SLBuffer              = 2;    // Buffer between SL and lowest/highest
@@ -157,7 +157,7 @@ input int SLBuffer              = 2;    // Buffer between SL and lowest/highest
 input double RiskPerTradePercent = 2.0;  // Risk 2% of equity per trade
 
 // Daily Limits
-input double MaxDailyLossPercent = 5.0;  // Stop trading after 5% loss
+input double MaxDailyLossPercent = 25.0;  // Stop trading after 25% loss
 input double MaxDailyWinPercent  = 10.0; // Take profit after 10% gain
 input double MaxDrawdownLimit    = 15.0; // Maximum drawdown tolerance
 

@@ -54,12 +54,17 @@ double CalculateRewardPoints(double entry, double takeProfit)
 //--------------------------------------------------------------------
 double CalculateRiskDollars(double lot, double riskPoints)
 {
-   // For XAUUSD: 1 lot = 100,000 units, 1 point = $0.01
-   // Risk = Lot × 100,000 × 0.01 × Risk Points
-   // Simplified: Lot × 1,000 × Risk Points
-   
-   double pipValue = 0.01;  // For XAUUSD
-   return lot * 100000 * pipValue * riskPoints / 100;
+   double tickValue = MarketInfo(Symbol(), MODE_TICKVALUE);
+   double tickSize  = MarketInfo(Symbol(), MODE_TICKSIZE);
+
+   Print("P_TickValue = ", tickValue);
+   Print("P_TickSize  = ", tickSize);
+
+   double risk = lot * riskPoints * Point / tickSize * tickValue;
+
+   Print("P_Calculated Risk = ", risk);
+
+   return risk;
 }
 
 //--------------------------------------------------------------------
@@ -99,9 +104,13 @@ double GetLotSizeFixed()
 //--------------------------------------------------------------------
 double GetLotSizeRiskBased(double riskPercent, double riskPoints)
 {
+   Print("******** ENTERED GetLotSizeRiskBased ********");
+   Print("Risk Percent = ", riskPercent);
+   Print("Risk Points  = ", riskPoints);
+
    if(riskPoints <= 0)
       return 0;
-   
+
    return CalculateLotSize(riskPercent, riskPoints);
 }
 
@@ -173,6 +182,15 @@ TradeRisk ValidateTradeRisk(double entry, double sl, double tp, double lot)
    risk.RiskRewardRatio = CalculateRiskRewardRatio(
       risk.RiskInPoints, risk.RewardInPoints);
    
+   // ===== DEBUG =====
+   Print("===== TRADE RISK =====");
+   Print("Entry      = ", entry);
+   Print("Stop Loss  = ", sl);
+   Print("Lot Size   = ", lot);
+   Print("Risk Points= ", risk.RiskInPoints);
+   Print("Risk Dollar= ", risk.RiskInDollars);
+   Print("======================");
+
    //---
    // Check: Minimum Risk
    //---
@@ -197,6 +215,12 @@ TradeRisk ValidateTradeRisk(double entry, double sl, double tp, double lot)
       return risk;
    }
    
+   Print("DRM===== RR CHECK =====");
+   Print("DRM_Risk Points = ", risk.RiskInPoints);
+   Print("DRM_Reward Points = ", risk.RewardInPoints);
+   Print("DRM_Actual RR = ", risk.RiskRewardRatio);
+   Print("DRM_Required RR = ", RiskRewardRatio);
+
    //---
    // Check: Risk/Reward Ratio
    //---

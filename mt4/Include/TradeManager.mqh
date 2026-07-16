@@ -137,6 +137,7 @@ double CalculateTPSell(int tpPoints)
 //--------------------------------------------------------------------
 double CalculateLotSize(double riskPercent, double slDistancePoints)
 {
+   Print("******** ENTERED CalculateLotSize ********");
    if(slDistancePoints <= 0)
    {
       Print("ERROR: SL distance must be positive");
@@ -146,14 +147,30 @@ double CalculateLotSize(double riskPercent, double slDistancePoints)
    // Account equity
    double accountEquity = AccountEquity();
    
+   Print("D_Tick Value = ", MarketInfo(Symbol(), MODE_TICKVALUE));
+   Print("D_Tick Size  = ", MarketInfo(Symbol(), MODE_TICKSIZE));
+   Print("D_Lot Size   = ", MarketInfo(Symbol(), MODE_LOTSIZE));
+   Print("D_Digits     = ", Digits);
+
    // Risk amount in account currency
    double riskAmount = (accountEquity * riskPercent) / 100.0;
    
+   Print("===== CalculateLotSize =====");
+   Print("D_Equity        = ", accountEquity);
+   Print("D_Risk Amount   = ", riskAmount);
+   Print("D_SL Distance   = ", slDistancePoints);
+
    // Pip value for GOLD (XAU/USD) = 1 point = $0.01
    // Lot size calculation: Lot = (Risk Amount) / (SL points × Pip Value)
-   double pipValue = 0.01;  // For XAUUSD
+   Print("D_MODE_TICKVALUE = ", MarketInfo(Symbol(), MODE_TICKVALUE));
+   Print("D_MODE_TICKSIZE  = ", MarketInfo(Symbol(), MODE_TICKSIZE));
+   Print("D_MODE_LOTSIZE   = ", MarketInfo(Symbol(), MODE_LOTSIZE));
+   
+   double pipValue = 1.0;      // Octa XAUUSD
    double lotSize = riskAmount / (slDistancePoints * pipValue);
    
+   Print("D_Raw Lot Size  = ", lotSize);
+
    // Round to nearest 0.01 (minimum MT4 lot)
    lotSize = MathRound(lotSize * 100) / 100;
    
