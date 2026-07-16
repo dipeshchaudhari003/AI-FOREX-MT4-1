@@ -361,6 +361,8 @@ int PlaceBuyOrder(double entryPrice, double sl, double tp,
    // Recalculate TP based on actual entry
    double actualTP = CalculateTPBuy(DefaultTakeProfit);
    
+   Print("Attempting BUY Order...");
+
    // Place order
    int ticket = OrderSend(
       Symbol(),           // Symbol
@@ -376,6 +378,9 @@ int PlaceBuyOrder(double entryPrice, double sl, double tp,
       clrGreen            // Color
    );
    
+   Print("OrderSend returned Ticket = ", ticket);
+   Print("Last Error = ", GetLastError());
+
    if(ticket < 0)
    {
       Print("❌ BUY ORDER FAILED | Error: ", GetLastError(), 

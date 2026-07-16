@@ -11,7 +11,7 @@
 //====================================================================
 // MODULE INCLUDES (CORE LAYER)
 //====================================================================
-#include "Config.mqh"
+#include <Config.mqh>
 #include <Globals.mqh>
 #include <Utilities.mqh>
 
@@ -94,6 +94,7 @@ void OnTick()
    // Step 2: Check filters (early exit if conditions not met)
    if(!AllowTrading())
    {
+      Print("BLOCKED -> AllowTrading()");
       UpdateChartComment();
       return;
    }
@@ -104,9 +105,20 @@ void OnTick()
    // Step 4: Generate trading signal
    SignalOutput signal = GenerateFinalSignal();
    
+   Print("====================================");
+   Print("Signal     = ", signal.Signal);
+   Print("IsValid    = ", signal.IsValid);
+   Print("Confidence = ", signal.Confidence);
+   Print("Source     = ", signal.Source);
+   Print("====================================");
+
    // Step 5: Check if signal is valid and tradeable
    if(!IsSignalValid(signal))
    {
+      Print("BLOCKED -> IsSignalValid()");
+      Print("Signal=",signal.Signal);
+      Print("Confidence=",signal.Confidence);
+      Print("Source=",signal.Source);
       UpdateChartComment();
       return;
    }
@@ -114,11 +126,10 @@ void OnTick()
    // Step 6: Check money management limits
    if(!IsTradeAllowedByMoneyManagement())
    {
-      LogWarning("Trade blocked by money management limits", "OnTick");
-      UpdateChartComment();
+      Print("BLOCKED -> MoneyManagement");
       return;
    }
-   
+      
    // Step 7: Calculate Stop Loss
    double stopLoss;
    if(signal.Signal == SIGNAL_BUY)
@@ -169,6 +180,8 @@ void OnTick()
    
    if(!tradeRisk.IsValid)
    {
+      Print("BLOCKED -> TradeRisk");
+      Print(tradeRisk.ValidationError);
       LogWarning("Trade validation failed: " + tradeRisk.ValidationError, "OnTick");
       UpdateChartComment();
       return;
@@ -177,11 +190,20 @@ void OnTick()
    // Step 11: Execute pre-trade risk check
    if(!PreTradeRiskCheck(tradeRisk))
    {
+      Print("BLOCKED -> PreTradeRiskCheck()");
       LogWarning("Risk check failed", "OnTick");
       UpdateChartComment();
       return;
    }
    
+   Print("==============================");
+   Print("READY TO PLACE TRADE");
+   Print("Signal=",signal.Signal);
+   Print("Lot=",baseLot);
+   Print("SL=",stopLoss);
+   Print("TP=",takeProfit);
+   Print("==============================");
+
    // Step 12: Place trade
    int ticket = 0;
    if(signal.Signal == SIGNAL_BUY)

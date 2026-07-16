@@ -68,11 +68,35 @@ bool LossFilter()
 //====================================================
 bool AllowTrading()
 {
-   if(!SpreadFilter()) return false;
-   if(!ATRFilter()) return false;
-   if(!ADXFilter()) return false;
-   if(!SessionFilter()) return false;
-   if(!LossFilter()) return false;
+   if(!SpreadFilter())
+   {
+      Print("BLOCKED -> SpreadFilter()");
+      return false;
+   }
+
+   if(!ATRFilter())
+   {
+      Print("BLOCKED -> ATRFilter()");
+      return false;
+   }
+
+   if(!ADXFilter())
+   {
+      Print("BLOCKED -> ADXFilter()");
+      return false;
+   }
+
+   if(!SessionFilter())
+   {
+      Print("BLOCKED -> SessionFilter()");
+      return false;
+   }
+
+   if(!LossFilter())
+   {
+      Print("BLOCKED -> LossFilter()");
+      return false;
+   }
 
    return true;
 }

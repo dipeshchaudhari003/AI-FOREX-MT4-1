@@ -73,17 +73,28 @@ double EvaluateTechnicalStrength(int technicalSignal)
 //--------------------------------------------------------------------
 double EvaluateMLStrength(MLSignal &mlSignal)
 {
-   // If ML signal is HOLD, strength is zero
+   Print("========== EvaluateMLStrength ==========");
+   Print("Signal      = ", mlSignal.Signal);
+   Print("Confidence  = ", DoubleToString(mlSignal.Confidence,2));
+   Print("IsValid     = ", mlSignal.IsValid);
+
    if(mlSignal.Signal == 0)
+   {
+      Print("RETURN 0 -> HOLD Signal");
       return 0.0;
-   
-   // ML signal exists, return its confidence
+   }
+
    if(!mlSignal.IsValid)
+   {
+      Print("Validation Error = ", mlSignal.ValidationError);
+      Print("RETURN 0 -> Invalid ML Signal");
       return 0.0;
-   
+   }
+
+   Print("RETURN CONFIDENCE = ", mlSignal.Confidence);
+
    return mlSignal.Confidence;
 }
-
 //====================================================================
 // SIGNAL AGREEMENT DETECTION
 //====================================================================
@@ -215,6 +226,15 @@ SignalOutput CombineSignalsBalanced(int technicalSignal,
    SignalOutput output;
    output.Timestamp = TimeCurrent();
    
+   Print("================ BALANCED =================");
+   Print("Technical Signal = ", technicalSignal);
+   Print("ML Signal        = ", mlSignal.Signal);
+   Print("Tech Strength    = ", DoubleToString(techStrength,2));
+   Print("ML Strength      = ", DoubleToString(mlStrength,2));
+   Print("Balanced Thresh  = ", DoubleToString(BalancedConfidenceThreshold,2));
+   Print("==========================================");
+
+   Print("Checking Conflict...");
    // Hard conflict = HOLD
    if(SignalsConflict(technicalSignal, mlSignal.Signal))
    {
@@ -226,12 +246,14 @@ SignalOutput CombineSignalsBalanced(int technicalSignal,
       return output;
    }
    
+   Print("Checking Agreement...");
    // If signals agree
    if(SignalsAgree(technicalSignal, mlSignal.Signal))
    {
       double agreementLevel = GetAgreementLevel(technicalSignal, mlSignal.Signal,
                                                 techStrength, mlStrength);
       
+      Print("Agreement Level = ", DoubleToString(agreementLevel,2));
       if(agreementLevel >= BalancedConfidenceThreshold)
       {
          output.Signal = technicalSignal;
@@ -241,10 +263,12 @@ SignalOutput CombineSignalsBalanced(int technicalSignal,
          output.Source = SOURCE_CONFLUENCE;
          output.Reason = "CONFLUENCE: Strong agreement (Balanced)";
          output.IsValid = true;
+         Print("RETURN -> CONFLUENCE");
          return output;
       }
    }
    
+   Print("Checking Technical Strength...");
    // One signal strong enough (alone)
    if(technicalSignal != 0 && techStrength >= BalancedConfidenceThreshold)
    {
@@ -258,10 +282,12 @@ SignalOutput CombineSignalsBalanced(int technicalSignal,
          output.Source = SOURCE_TECHNICAL;
          output.Reason = "TECHNICAL: Strong signal (ML not conflicting)";
          output.IsValid = true;
+         Print("RETURN -> TECHNICAL");
          return output;
       }
    }
-   
+
+   Print("Checking ML Strength...");
    if(mlSignal.Signal != 0 && mlStrength >= BalancedConfidenceThreshold)
    {
       // Check technical doesn't conflict
@@ -274,10 +300,14 @@ SignalOutput CombineSignalsBalanced(int technicalSignal,
          output.Source = SOURCE_ML;
          output.Reason = "ML: Strong signal (Technical not conflicting)";
          output.IsValid = true;
+         Print("RETURN -> ML");
          return output;
       }
    }
-   
+
+   Print("FINAL RESULT -> HOLD");
+   Print("Reason : Insufficient confidence");
+
    // Not enough confidence
    output.Signal = SIGNAL_HOLD;
    output.Confidence = 0.0;
@@ -435,7 +465,19 @@ SignalOutput GenerateFinalSignal()
       output = CombineSignalsBalanced(technicalSignal, mlSignal,
                                       techStrength, mlStrength);
    }
+
+   Print("=========== AFTER CombineSignalsBalanced ===========");
+   Print("Output.Signal      = ", output.Signal);
+   Print("Output.Confidence  = ", DoubleToString(output.Confidence,2));
+   Print("Output.IsValid     = ", output.IsValid);
+   Print("Output.Source      = ", output.Source);
+   Print("Output.Reason      = ", output.Reason);
+   Print("==================================================");
    
+   Print("Before Final Filter");
+   Print("Signal     = ", output.Signal);
+   Print("Confidence = ", DoubleToString(output.Confidence,2));
+   Print("IsValid    = ", output.IsValid);   
    // Step 5: Apply final confidence filter
    if(output.Signal != 0 && output.Confidence < MinConfidenceRequired)
 {

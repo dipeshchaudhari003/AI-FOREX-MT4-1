@@ -2,6 +2,9 @@ import os
 import time
 import joblib
 import pandas as pd
+import json
+from datetime import datetime
+
 
 # ================= PATHS =================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -11,12 +14,18 @@ MT4_FILES = os.getenv(
     "MT4_FILES",
     r"C:\Users\Dipesh\AppData\Roaming\MetaQuotes\Terminal\0E9DF41E457B90231E706129F0D6BB0C\MQL4\Files",
 )
+
 MT4_CSV = os.path.join(MT4_FILES, "xau_rates.csv")
 SIGNAL_FILE = os.path.join(MT4_FILES, "xau_signal.txt")
 TP_FILE = os.path.join(MT4_FILES, "xau_tp.txt")
 CONF_FILE = os.path.join(MT4_FILES, "xau_conf.txt")
 PROBS_FILE = os.path.join(MT4_FILES, "xau_probs.txt")
 SAFE_CSV = os.path.join(BASE_DIR, "data", "xau_rates_safe.csv")
+
+BULL_PROB_FILE = os.path.join(MT4_FILES, "xau_bull_prob.txt")
+BEAR_PROB_FILE = os.path.join(MT4_FILES, "xau_bear_prob.txt")
+
+STATUS_FILE = os.path.join(MT4_FILES, "xau_status.json")
 
 SLEEP_SEC = 15
 MIN_CANDLES = 30
@@ -130,7 +139,12 @@ while True:
             conf_threshold = 0.60
 
         # Use grid-optimized TP
-        tp_points = 50
+        if recent_range < 1.5:
+            tp_points = 35
+        elif recent_range < 2.5:
+            tp_points = 50
+        else:
+            tp_points = 70
 
         X = pd.DataFrame(
             [[last["ma_fast"], last["ma_slow"], last["momentum"], last["ret"], last["range_5"]]],
@@ -143,20 +157,41 @@ while True:
         sell_p = proba[class_to_index[-1]] if -1 in class_to_index else 0.0
         edge = abs(buy_p - sell_p)
 
-        print(
-            f"ML BUY={buy_p:.2f} SELL={sell_p:.2f} | "
-            f"RANGE={recent_range:.2f} EDGE={edge:.2f} CONF={conf_threshold}"
-        )
+        print("\n" + "="*60)
+        print("GoldPilotAI Enterprise ML Predictor")
+        print("="*60)
+
+        print(f"Time           : {datetime.now():%Y-%m-%d %H:%M:%S}")
+        print(f"Closed Candle  : {current_dt}")
+
+        print(f"BUY Probability: {buy_p:.2%}")
+        print(f"SELL Probability:{sell_p:.2%}")
+
+        print(f"Confidence     : {max(buy_p,sell_p):.2%}")
+        print(f"Threshold      : {conf_threshold:.2f}")
+
+        print(f"Market Range   : {recent_range:.2f}")
+        print(f"Prediction Edge: {edge:.2f}")
+        print(f"Dynamic TP     : {tp_points}")
+
+        print("="*60)
 
         signal = 0
+        reason = "WAIT"
+
         if buy_p >= conf_threshold and buy_p > sell_p + EDGE_MARGIN:
             signal = 1
-            print("🔥 STRONG BUY (ML)")
+            reason = "Strong BUY"
+
         elif sell_p >= conf_threshold and sell_p > buy_p + EDGE_MARGIN:
             signal = -1
-            print("🔥 STRONG SELL (ML)")
+            reason = "Strong SELL"
+
         else:
-            print("⏸ SKIP → low edge")
+            reason = "Low Confidence"
+
+        print(f"Signal         : {signal}")
+        print(f"Reason         : {reason}")
 
         with open(SIGNAL_FILE, "w", encoding="utf-8") as f:
             f.write(str(signal))
@@ -169,19 +204,45 @@ while True:
         with open(CONF_FILE, "w", encoding="utf-8") as f:
             f.write(f"{conf:.4f}")
 
+        # Write probabilities for MT4
+        with open(BULL_PROB_FILE, "w", encoding="utf-8") as f:
+            f.write(f"{buy_p:.4f}")
+
+        with open(BEAR_PROB_FILE, "w", encoding="utf-8") as f:
+            f.write(f"{sell_p:.4f}")
+            
         # write human-readable probs for debugging/analysis
         try:
             with open(PROBS_FILE, "w", encoding="utf-8") as f:
                 f.write(f"buy={buy_p:.4f},sell={sell_p:.4f},edge={edge:.4f},dt={current_dt}\n")
         except Exception:
             pass
+        
+        status = {
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "symbol": "XAUUSD",
+            "timeframe": "M1",
+            "signal": signal,
+            "reason": reason,
+            "buy_probability": round(float(buy_p),4),
+            "sell_probability": round(float(sell_p),4),
+            "confidence": round(float(max(buy_p,sell_p)),4),
+            "edge": round(float(edge),4),
+            "dynamic_tp": tp_points,
+            "market_range": round(float(recent_range),2)
+        }
 
+        with open(STATUS_FILE, "w") as f:
+            json.dump(status, f, indent=4)
+            
         # update prev_dt so we don't pulse repeatedly for same candle
         if WRITE_ON_NEW_BAR:
             prev_dt = current_dt
 
-        print(">>> SIGNAL PULSED:", signal, "| TP:", tp_points)
-        print("-" * 60)
+        print(f"Signal Written : {signal}")
+        print(f"Take Profit    : {tp_points}")
+        print("MT4 Files      : Updated Successfully")
+        print("="*60)
 
         time.sleep(SLEEP_SEC)
 

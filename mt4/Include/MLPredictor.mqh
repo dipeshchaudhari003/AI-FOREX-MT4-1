@@ -44,58 +44,64 @@ struct MLSignal
 //--------------------------------------------------------------------
 int ReadMLSignal()
 {
-   int h = FileOpen(SIGNAL_FILE_PATH, FILE_READ | FILE_TXT);
-   
+   Print("==================================");
+   Print("Reading ML Signal...");
+   Print("File Name : ", SIGNAL_FILE_PATH);
+
+   ResetLastError();
+
+   int h = FileOpen(SIGNAL_FILE_PATH, FILE_READ|FILE_TXT);
+
    if(h == INVALID_HANDLE)
    {
-      Print("⚠️ ML Signal file not found: ", SIGNAL_FILE_PATH);
-      return 0;  // Default: HOLD
-   }
-   
-   string signal_str = FileReadString(h);
-   FileClose(h);
-   
-   int signal = (int)StrToInteger(signal_str);
-   
-   // Validate signal is in expected range
-   if(signal != -1 && signal != 0 && signal != 1)
-   {
-      Print("⚠️ Invalid ML signal value: ", signal_str);
+      Print("FAILED TO OPEN FILE");
+      Print("MT4 Error : ", GetLastError());
       return 0;
    }
-   
+
+   string signal_str = FileReadString(h);
+
+   FileClose(h);
+
+   Print("Raw Value : [", signal_str, "]");
+
+   int signal = StrToInteger(signal_str);
+
+   Print("Converted Signal : ", signal);
+
+   Print("==================================");
+
    return signal;
 }
-
 //--------------------------------------------------------------------
 // Read Confidence Score from File (Python Output)
 //--------------------------------------------------------------------
 double ReadMLConfidence()
 {
-   int h = FileOpen(CONFIDENCE_FILE_PATH, FILE_READ | FILE_TXT);
-   
-   if(h == INVALID_HANDLE)
+   Print("Reading Confidence...");
+
+   ResetLastError();
+
+   int h = FileOpen(CONFIDENCE_FILE_PATH, FILE_READ|FILE_TXT);
+
+   if(h==INVALID_HANDLE)
    {
-      Print("⚠️ Confidence file not found: ", CONFIDENCE_FILE_PATH);
-      return 0.0;  // Default: no confidence
+      Print("Confidence File Missing");
+      Print("Error=",GetLastError());
+      return 0;
    }
-   
-   string conf_str = FileReadString(h);
+
+   string s=FileReadString(h);
+
    FileClose(h);
-   
-   if(StringLen(conf_str) == 0)
-      return 0.0;
-   
-   double confidence = StrToDouble(conf_str);
-   
-   // Validate confidence is between 0 and 1
-   if(confidence < 0 || confidence > 1)
-   {
-      Print("⚠️ Invalid confidence value: ", conf_str);
-      return 0.0;
-   }
-   
-   return confidence;
+
+   Print("Confidence Raw = [",s,"]");
+
+   double conf=StrToDouble(s);
+
+   Print("Confidence = ",DoubleToString(conf,2));
+
+   return conf;
 }
 
 //--------------------------------------------------------------------
@@ -196,6 +202,7 @@ string ReadModelInfo()
 //--------------------------------------------------------------------
 MLSignal GenerateMLSignal()
 {
+   Print("******** GenerateFinalSignal ENTERED ********");
    MLSignal signal;
    signal.IsValid = true;
    signal.ValidationError = "";
@@ -211,11 +218,24 @@ MLSignal GenerateMLSignal()
    signal.Model = ReadModelInfo();
    signal.Timestamp = TimeCurrent();
    
+   Print("BuyProbability  = ", DoubleToString(signal.BuyProbability,4));
+   Print("SellProbability = ", DoubleToString(signal.SellProbability,4));
+
+   Print("========== ML OBJECT ==========");
+   Print("Signal      = ", signal.Signal);
+   Print("Confidence  = ", DoubleToString(signal.Confidence,2));
+   Print("BuyProb     = ", DoubleToString(signal.BuyProbability,2));
+   Print("SellProb    = ", DoubleToString(signal.SellProbability,2));
+   Print("Score       = ", DoubleToString(signal.Score,2));
+   Print("Model       = ", signal.Model);
+   Print("===============================");
+
    //---
    // Validate signal is meaningful
    //---
    if(signal.Signal == 0)
    {
+      Print("FAILED #1 -> Signal is HOLD");
       signal.IsValid = false;
       signal.ValidationError = "ML signal is HOLD (0)";
       return signal;
@@ -226,6 +246,7 @@ MLSignal GenerateMLSignal()
    //---
    if(signal.Confidence < MinConfidenceRequired)
    {
+      Print("FAILED #2 -> Confidence too low");
       signal.IsValid = false;
       signal.ValidationError = StringFormat(
          "Confidence too low: %.2f < %.2f",
@@ -247,6 +268,7 @@ MLSignal GenerateMLSignal()
    //---
    if(signal.Signal == 1 && signal.BuyProbability <= signal.SellProbability)
    {
+      Print("FAILED #3 -> BUY probability mismatch");
       signal.IsValid = false;
       signal.ValidationError = "BUY signal but sell probability higher";
       return signal;
@@ -254,6 +276,7 @@ MLSignal GenerateMLSignal()
    
    if(signal.Signal == -1 && signal.SellProbability <= signal.BuyProbability)
    {
+      Print("FAILED #4 -> SELL probability mismatch");
       signal.IsValid = false;
       signal.ValidationError = "SELL signal but buy probability higher";
       return signal;
