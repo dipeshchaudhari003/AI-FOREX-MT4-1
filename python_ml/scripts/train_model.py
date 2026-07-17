@@ -1,23 +1,17 @@
+import sys
 import os
 import joblib
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CSV_PATH = os.path.join(BASE_DIR, "data", "XAUUSD_M1.csv")
+sys.path.insert(0, BASE_DIR)
+
+from features import build_features, FEATURE_COLUMNS
+
+
+CSV_PATH = os.path.join(BASE_DIR, "data", "xauusd_m1_history.csv")
 MODEL_PATH = os.path.join(BASE_DIR, "models", "xau_model.pkl")
-FEATURES = ["ma_fast", "ma_slow", "momentum", "ret", "range_5"]
-
-
-def build_features(df):
-    df = df.copy()
-    df["ma_fast"] = df["close"].rolling(5).mean()
-    df["ma_slow"] = df["close"].rolling(20).mean()
-    df["momentum"] = df["close"] - df["close"].shift(5)
-    df["ret"] = df["close"].pct_change(fill_method=None)
-    df["range_5"] = (df["high"] - df["low"]).rolling(5).mean()
-    return df
 
 
 # ================= READ HISTORICAL DATA =================
@@ -38,9 +32,9 @@ df["future_close"] = df["close"].shift(-1)
 df["signal"] = np.where(df["future_close"] > df["close"], 1, -1)
 
 # ================= CLEAN =================
-df = df.dropna(subset=[*FEATURES, "signal"])
+df = df.dropna(subset=[*FEATURE_COLUMNS, "signal"])
 
-X = df[FEATURES]
+X = df[FEATURE_COLUMNS]
 y = df["signal"]
 
 # ================= TRAIN MODEL =================

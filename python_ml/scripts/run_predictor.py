@@ -1,11 +1,14 @@
+import sys
 import os
 import time
 import joblib
 import pandas as pd
 import json
 from datetime import datetime
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
 
-
+from features import build_features, FEATURE_COLUMNS
 # ================= PATHS =================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "xau_model.pkl")
@@ -66,16 +69,6 @@ def safe_copy(src, dst, retries=5, delay=0.4):
     return False
 
 
-def build_features(df):
-    df = df.copy()
-    df["ma_fast"] = df["close"].rolling(5).mean()
-    df["ma_slow"] = df["close"].rolling(20).mean()
-    df["momentum"] = df["close"] - df["close"].shift(5)
-    df["ret"] = df["close"].pct_change(fill_method=None)
-    df["range_5"] = (df["high"] - df["low"]).rolling(5).mean()
-    return df
-
-
 if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
 
@@ -106,7 +99,7 @@ while True:
             continue
 
         df = build_features(df)
-        df = df.dropna(subset=["ma_fast", "ma_slow", "momentum", "ret", "range_5"])
+        df = df.dropna(subset=FEATURE_COLUMNS)
 
         if len(df) < MIN_CANDLES:
             print("WAIT → indicators not ready")
@@ -148,7 +141,7 @@ while True:
 
         X = pd.DataFrame(
             [[last["ma_fast"], last["ma_slow"], last["momentum"], last["ret"], last["range_5"]]],
-            columns=["ma_fast", "ma_slow", "momentum", "ret", "range_5"],
+            columns=FEATURE_COLUMNS,
         )
 
         proba = model.predict_proba(X)[0]
